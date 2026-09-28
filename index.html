@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SISTEMA NEXUS - Consulta de Centros de Custo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #070a12;
+            --card-bg: rgba(15, 23, 42, 0.65);
+            --neon-cyan: #00f3ff;
+            --neon-purple: #aa00ff;
+            --neon-green: #00ff88;
+            --text-main: #f1f5f9;
+            --text-dim: #94a3b8;
+            --border-glow: rgba(0, 243, 255, 0.25);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(170, 0, 255, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(0, 243, 255, 0.15) 0%, transparent 40%);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        /* Header Futurista */
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            position: relative;
+        }
+
+        header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 900;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+        }
+
+        /* Bar de Busca */
+        .search-box {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 1.2rem 1.5rem 1.2rem 3.5rem;
+            background: rgba(15, 23, 42, 0.8);
+            border: 2px solid var(--border-glow);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1.2rem;
+            font-family: 'Rajdhani', sans-serif;
+            outline: none;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .search-box input:focus {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 25px rgba(0, 243, 255, 0.4);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--neon-cyan);
+            font-size: 1.4rem;
+            pointer-events: none;
+        }
+
+        /* Contador */
+        .results-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0 0.5rem;
+            font-size: 0.95rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .counter-badge {
+            color: var(--neon-cyan);
+            font-weight: 700;
+        }
+
+        /* Grid de Resultados */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.2rem;
+        }
+
+        /* Card Futurista */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-left: 4px solid var(--neon-cyan);
+            border-radius: 10px;
+            padding: 1.2rem;
+            backdrop-filter: blur(12px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, transparent 50%, rgba(0, 243, 255, 0.05) 50%);
+            pointer-events: none;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 8px 25px rgba(0, 243, 255, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.8rem;
+        }
+
+        .card-code {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--neon-cyan);
+            letter-spacing: 1px;
+            background: rgba(0, 243, 255, 0.08);
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            word-break: break-all;
+        }
+
+        .category-pill {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            background: rgba(170, 0, 255, 0.2);
+            color: #d8b4fe;
+            border: 1px solid rgba(170, 0, 255, 0.3);
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-copy {
+            background: transparent;
+            border: 1px solid var(--border-glow);
+            color: var(--text-dim);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn-copy:hover {
+            color: #fff;
+            background: rgba(0, 243, 255, 0.15);
+            border-color: var(--neon-cyan);
+        }
+
+        /* Estado Vazio */
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-dim);
+            font-size: 1.3rem;
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px dashed var(--border-glow);
+        }
+
+        /* Toast de Cópia */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--neon-green);
+            color: #000;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-family: 'Orbitron', sans-serif;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.8rem; }
+            .results-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Centro de Custos</h1>
+            <p>Portal de Consulta Rápida & Analytics</p>
+        </header>
+
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Digite o código ou nome do departamento..." autofocus autocomplete="off">
+        </div>
+
+        <div class="results-info">
+            <span>Resultados Encontrados</span>
+            <span><span class="counter-badge" id="resultCount">0</span> itens</span>
+        </div>
+
+        <div class="results-grid" id="resultsGrid"></div>
+    </div>
+
+    <div class="toast" id="toast">Código Copiado!</div>
+
+    <script>
+        const costCenters = [
+            { code: "1.1.1.1.2.7", description: "Gerência - FINANCEIRO SÃO LUÍS", category: "Corporativo" },
+            { code: "1.1.1.1.3.1", description: "Gerência - CONTABILIDADE", category: "Corporativo" },
+            { code: "1.1.1.1.55.6", description: "Entregas - MATEUS MAIS", category: "Operações Digitais" },
+            { code: "1.1.1.1.55.7", description: "Anti-fraude - MATEUS MAIS", category: "Operações Digitais" },
+            { code: "1.1.1.4.0.0", description: "Gerência - RESTAURANTE A LA CARTE", category: "Alimentação" },
+            { code: "1.1.1.4.2 / 1.1.1.4.2.1", description: "Gerência - PREVENÇÃO DE PERDAS", category: "Operacional Loja" },
+            { code: "1.1.1.4.2.2", description: "WMS - PREVENÇÃO DE PERDAS", category: "Logística / WMS" },
+            { code: "1.1.1.4.4 / 1.1.1.4.4.1", description: "Gerência - FATURAMENTO", category: "Operacional Loja" },
+            { code: "1.1.1.4.5 / 1.1.1.4.5.1", description: "Gerência - FRENTE DE LOJA", category: "Operacional Loja" },
+            { code: "1.1.1.4.6 / 1.1.1.4.6.1", description: "Mercearia - REPOSIÇÃO", category: "Operacional Loja" },
+            { code: "1.1.1.4.7 / 1.1.1.4.7.1", description: "Gerência - HORTIFRUTI", category: "Operacional Loja" },
+            { code: "1.1.1.4.8 / 1.1.1.4.8.1", description: "Gerência - FRIOS/LATICÍNIOS", category: "Operacional Loja" },
+            { code: "1.1.1.4.9.1", description: "Gerência - PADARIA", category: "Operacional Loja" },
+            { code: "1.1.1.4.9.2", description: "Churros - PADARIA", category: "Alimentação" },
+            { code: "1.1.1.4.10 / 1.1.1.4.10.1", description: "Gerência - LANCHONETE", category: "Alimentação" },
+            { code: "1.1.1.4.11", description: "ROTISSERIA", category: "Alimentação" },
+            { code: "1.1.1.4.12", description: "ELETRO", category: "Comercial" },
+            { code: "1.1.1.4.13 / 1.1.1.4.13.1", description: "Gerência - AÇOUGUE", category: "Operacional Loja" },
+            { code: "1.1.1.4.14 / 1.1.1.4.14.1", description: "Gerência - PEIXARIA", category: "Operacional Loja" },
+            { code: "1.1.1.4.15", description: "CONFECÇÃO", category: "Comercial" },
+            { code: "1.1.1.4.16 / 1.1.1.4.16.1", description: "Gerência - DEPÓSITO", category: "Logística Loja" },
+            { code: "1.1.1.4.17 / 1.1.1.4.17.1", description: "Gerência - ATACADO", category: "Operacional Loja" },
+            { code: "1.1.1.4.18 / 1.1.1.4.18.1", description: "Gerência - LIMPEZA", category: "Operacional Loja" },
+            { code: "1.1.1.4.19 / 1.1.1.4.19.1", description: "Gerência - GERÊNCIA GERAL", category: "Administrativo Loja" },
+            { code: "1.1.1.4.20 / 1.1.1.4.20.1", description: "Gerência - TECNOLOGIA DA INFORMAÇÃO", category: "Tecnologia" },
+            { code: "1.1.1.4.21", description: "CONTABILIDADE", category: "Administrativo" },
+            { code: "1.1.1.4.22 / 1.1.1.4.22.1", description: "Geral do Financeiro - FINANCEIRO", category: "Financeiro" },
+            { code: "1.1.1.4.24 / 1.1.1.4.24.1", description: "RH Operacional - RECURSOS HUMANOS", category: "Recursos Humanos" },
+            { code: "1.1.1.4.25", description: "INVENTÁRIO", category: "Controladoria" },
+            { code: "1.1.1.4.26", description: "MARKETING", category: "Marketing" },
+            { code: "1.1.1.4.28 / 1.1.1.4.28.1", description: "Gerência - MANUTENÇÃO", category: "Operacional Loja" },
+            { code: "1.1.1.4.29 / 1.1.1.4.29.1", description: "Gerência - RESTAURANTE", category: "Alimentação" },
+            { code: "1.1.1.4.31.1", description: "Gerência - SUPORTE", category: "Operacional Loja" },
+            { code: "1.1.1.4.34.1", description: "Gerência - APRENDIZAGEM", category: "Recursos Humanos" },
+            { code: "1.1.1.4.40", description: "EMPÓRIO FRIOS", category: "Empório" },
+            { code: "1.1.1.4.41", description: "EMPÓRIO AÇOUGUE", category: "Empório" },
+            { code: "1.1.1.4.42", description: "EMPÓRIO ESPAÇO GOURMET", category: "Empório" },
+            { code: "1.1.1.4.43 / 1.1.1.4.43.1", description: "Gerência - EMPÓRIO PADARIA", category: "Empório" },
+            { code: "1.1.1.4.45 / 1.1.1.4.45.1", description: "Gerência - EMPÓRIO MERCEARIA", category: "Empório" },
+            { code: "1.1.1.4.46", description: "EMPÓRIO PEIXARIA", category: "Empório" },
+            { code: "1.1.1.4.47 / 1.1.1.4.47.1", description: "Gerência - EMPÓRIO HORTIFRUTI", category: "Empório" },
+            { code: "1.1.1.4.48", description: "EMPÓRIO BAZAR", category: "Empório" },
+            { code: "1.1.1.4.49", description: "EMPÓRIO ADEGA", category: "Empório" },
+            { code: "1.1.1.4.52", description: "EMPÓRIO (Geral)", category: "Empório" },
+            { code: "1.1.1.4.55", description: "PIZZA TERELINA", category: "Alimentação" },
+            { code: "1.1.1.4.56", description: "ATELIÊ", category: "Operacional Loja" },
+            { code: "1.1.1.4.57", description: "EMPÓRIO BOULANGERIE", category: "Empório" },
+            { code: "1.1.1.4.58", description: "EMPÓRIO PIZZAS", category: "Empório" },
+            { code: "1.1.1.4.59", description: "EMPÓRIO SUCOS", category: "Empório" },
+            { code: "1.1.1.4.60", description: "EMPÓRIO GELATO", category: "Empório" },
+            { code: "1.1.1.4.61", description: "EMPÓRIO CAFETERIA", category: "Empório" },
+            { code: "1.1.1.4.64", description: "EMPÓRIO MASSAS FRESCAS", category: "Empório" },
+            { code: "1.1.1.4.71 / 1.1.1.4.71.1", description: "Gerência - APP SUPER", category: "Operações Digitais" },
+            { code: "1.1.1.4.74.1", description: "Gerência - BOTECO MATEUS", category: "Alimentação" },
+            { code: "1.1.1.4.75.1", description: "Gerência - MIX MAIS", category: "Operações Digitais" },
+            { code: "1.1.1.4.76.1", description: "Gerência - APP MATEUS MAIS", category: "Operações Digitais" },
+            { code: "1.1.1.4.77 / 1.1.1.4.77.1", description: "Gerência - RESTAURANTE INDUSTRIAL", category: "Alimentação" },
+            { code: "1.1.1.4.77.2", description: "Eventos Internos - RESTAURANTE INDUSTRIAL", category: "Alimentação" },
+            { code: "1.1.1.4.78", description: "AÇAITERIA", category: "Alimentação" },
+            { code: "1.1.1.4.79", description: "FOOD SERVICE", category: "Alimentação" },
+            { code: "1.1.1.13.1.4", description: "Administrativo - DIRETORIA DE OPERAÇÕES NORDESTE", category: "Diretoria Regional" },
+            { code: "1.1.1.13.1.5", description: "Jurídico - DIRETORIA DE OPERAÇÕES NORDESTE", category: "Diretoria Regional" },
+            { code: "1.1.1.13.2.1", description: "Diretoria - DIRETORIA DE OPERAÇÕES BAHIA/SERGIPE", category: "Diretoria Regional" },
+            { code: "1.1.1.13.5.1", description: "Gerência - INTELIGÊNCIA COMERCIAL NORDESTE", category: "Regional Nordeste" },
+            { code: "1.1.1.13.6.4", description: "Marketing / Inauguração - MARKETING NORDESTE", category: "Regional Nordeste" },
+            { code: "1.1.1.13.7.1", description: "Coordenação - GESTÃO DE PLANEJAMENTO E PERFORMANCE NORDESTE", category: "Regional Nordeste" },
+            { code: "1.1.1.14.1.1", description: "Gerência - COMPRAS BAHIA-SERGIPE", category: "Regional BA/SE" },
+            { code: "1.1.1.14.3.1", description: "Diretoria - OPERAÇÕES BAHIA-SERGIPE", category: "Regional BA/SE" },
+            { code: "1.1.1.14.4.1", description: "Coordenação - ADMINISTRATIVO BAHIA-SERGIPE", category: "Regional BA/SE" },
+            { code: "1.1.1.14.5.1", description: "Coordenação - RECURSOS HUMANOS BAHIA-SERGIPE", category: "Regional BA/SE" },
+            { code: "1.1.1.14.7.1", description: "Gerência - SEGURANÇA DO TRABALHO BAHIA-SERGIPE", category: "Regional BA/SE" },
+            { code: "1.1.1.14.8.1", description: "Coordenação - MARKETING BAHIA/SERGIPE", category: "Regional BA/SE" },
+            { code: "1.1.1.14.9.1", description: "Coordenação - SEGURANÇA ALIMENTAR BAHIA/SERGIPE", category: "Regional BA/SE" },
+            { code: "1.1.1.14.11.1", description: "Coordenação - MANUTENÇÃO BAHIA/SERGIPE", category: "Regional BA/SE" },
+            { code: "1.1.1.14.13.1", description: "UniMateus Operação - RECURSOS HUMANOS CD BAHIA/SERGIPE", category: "Logística / CD" },
+            { code: "1.1.1.15.22.1", description: "UniMateus Operação - RECURSOS HUMANOS CD PERNAMBUCO/ALAGOAS", category: "Logística / CD" },
+            { code: "1.4.1.1.4.1", description: "Gerência - REPOSIÇÃO MERCEARIA / BAZAR", category: "Operacional Outras Filiais" }
+        ];
+
+        const searchInput = document.getElementById('searchInput');
+        const resultsGrid = document.getElementById('resultsGrid');
+        const resultCount = document.getElementById('resultCount');
+        const toast = document.getElementById('toast');
+
+        // Função de busca insensível a acentos
+        function normalizeText(text) {
+            return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        }
+
+        function renderCards(data) {
+            resultsGrid.innerHTML = '';
+            resultCount.textContent = data.length;
+
+            if (data.length === 0) {
+                resultsGrid.innerHTML = `
+                    <div class="no-results">
+                        Nenhum centro de custo encontrado para sua busca.
+                    </div>`;
+                return;
+            }
+
+            data.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div>
+                        <div class="card-header">
+                            <span class="card-code">${item.code}</span>
+                            <span class="category-pill">${item.category}</span>
+                        </div>
+                        <div class="card-title">${item.description}</div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn-copy" onclick="copyToClipboard('${item.code}')">
+                            📋 Copiar Código
+                        </button>
+                    </div>
+                `;
+                resultsGrid.appendChild(card);
+            });
+        }
+
+        function filterResults() {
+            const query = normalizeText(searchInput.value.trim());
+            
+            const filtered = costCenters.filter(item => {
+                const codeMatch = normalizeText(item.code).includes(query);
+                const descMatch = normalizeText(item.description).includes(query);
+                const catMatch = normalizeText(item.category).includes(query);
+                return codeMatch || descMatch || catMatch;
+            });
+
+            renderCards(filtered);
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 2000);
+            });
+        }
+
+        searchInput.addEventListener('input', filterResults);
+
+        // Renderização Inicial
+        renderCards(costCenters);
+    </script>
+</body>
+</html>
